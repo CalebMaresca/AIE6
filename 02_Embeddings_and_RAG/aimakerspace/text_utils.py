@@ -1,10 +1,11 @@
 import os
-from typing import List
+from typing import List, Dict, Tuple
 
 
 class TextFileLoader:
     def __init__(self, path: str, encoding: str = "utf-8"):
         self.documents = []
+        self.metadata = []
         self.path = path
         self.encoding = encoding
 
@@ -21,19 +22,28 @@ class TextFileLoader:
     def load_file(self):
         with open(self.path, "r", encoding=self.encoding) as f:
             self.documents.append(f.read())
+            # Extract the filename without extension as document name
+            doc_name = os.path.basename(self.path)
+            self.metadata.append({"name": doc_name})
 
     def load_directory(self):
         for root, _, files in os.walk(self.path):
             for file in files:
                 if file.endswith(".txt"):
+                    file_path = os.path.join(root, file)
                     with open(
-                        os.path.join(root, file), "r", encoding=self.encoding
+                        file_path, "r", encoding=self.encoding
                     ) as f:
                         self.documents.append(f.read())
+                        # Extract the filename without extension as document name
+                        self.metadata.append({"name": file})
 
     def load_documents(self):
         self.load()
-        return self.documents
+        if self.metadata:
+            return list(zip(self.documents, self.metadata))
+        else:
+            return self.documents
 
 
 class CharacterTextSplitter:
@@ -56,10 +66,23 @@ class CharacterTextSplitter:
         return chunks
 
     def split_texts(self, texts: List[str]) -> List[str]:
-        chunks = []
-        for text in texts:
-            chunks.extend(self.split(text))
-        return chunks
+        """
+        Split texts while preserving metadata for each chunk.
+        
+        Args:
+            texts_with_metadata: List of (text, metadata) tuples
+            
+        Returns:
+            List of (chunk, metadata) tuples
+        """
+        chunks_with_metadata = []
+        for text, metadata in texts:
+            # Split the text into chunks
+            text_chunks = self.split(text)
+            # Create a (chunk, metadata) tuple for each chunk
+            for chunk in text_chunks:
+                chunks_with_metadata.append((chunk, metadata))
+        return chunks_with_metadata
 
 
 if __name__ == "__main__":
