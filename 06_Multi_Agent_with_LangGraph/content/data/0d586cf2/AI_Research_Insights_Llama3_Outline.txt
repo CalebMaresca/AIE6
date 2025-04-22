@@ -1,0 +1,6 @@
+1. Introduction to the groundbreaking research
+2. Overview of Llama-3's context length extension
+3. Key technique: Quantized Low-Rank Adaptation (QLoRA)
+4. Training process efficiency and requirements
+5. Implications of the research for AI applications
+6. Acknowledgment of the research team
